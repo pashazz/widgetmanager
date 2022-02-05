@@ -1,0 +1,39 @@
+GET http://localhost:8080/widgets/all
+Accept: application/json
+
+###
+POST localhost:8080/widgets
+Content-Type: application/json
+
+{
+  "x": 20,
+  "y": 40,
+  "width": 14,
+  "height": 20
+}
+
+###
+PUT localhost:8080/widgets/1
+Content-Type: application/json
+
+{
+  "x": 25,
+  "z": 5
+}
+
+
+
+###
+GET localhost:8080/widgets
+Content-Type: application/json
+
+{
+  "page": 0,
+  "size": 2
+}
+
+###
+GET localhost:8080/widgets/1
+
+###
+DELETE localhost:8080/widgets/1

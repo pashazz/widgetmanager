@@ -36,4 +36,7 @@ Content-Type: application/json
 GET localhost:8080/widgets/1
 
 ###
+GET localhost:8080/widgets/
+
+###
 DELETE localhost:8080/widgets/1

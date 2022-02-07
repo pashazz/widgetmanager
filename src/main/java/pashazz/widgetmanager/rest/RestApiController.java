@@ -12,6 +12,8 @@ import java.util.Optional;
 
 @RestController
 public class RestApiController {
+  private static final int DEFAULT_PAGE_SIZE = 50;
+
   private final ConcurrentInMemoryWidgetRepository repo;
 
   public RestApiController(@NotNull ConcurrentInMemoryWidgetRepository repo) {
@@ -24,10 +26,10 @@ public class RestApiController {
   }
 
   @GetMapping("/widgets")
-  List<Widget<Long>> page(@RequestBody PaginationRequest request) {
+  List<Widget<Long>> page(@RequestBody Optional<PaginationRequest> request) {
     return repo.listWidgets(
-      Optional.ofNullable(request.getPage()).orElse(0),
-      Optional.ofNullable(request.getSize()).orElse(50));
+      request.map(PaginationRequest::getPage).orElse(0),
+      request.map(PaginationRequest::getSize).orElse(DEFAULT_PAGE_SIZE));
   }
 
   @GetMapping("/widgets/{id}")

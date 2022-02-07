@@ -13,6 +13,7 @@ The widget has the following fields:
 * width
 * height
 * z
+* lastUpdatedAt - update timestamp is assigned automatically
 
 ### z - zOrder
 The widget's zOrder (z) is unique. If Z-index is not specified, the widget moves to foreground

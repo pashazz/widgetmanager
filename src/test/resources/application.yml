@@ -1,5 +1,4 @@
 logging:
   level:
     pashazz.widgetmanager: INFO
-    pashazz.widgetmanager.aspect: TRACE
 

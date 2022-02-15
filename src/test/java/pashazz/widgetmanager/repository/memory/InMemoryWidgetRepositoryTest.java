@@ -4,13 +4,19 @@ import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.context.annotation.ComponentScan;
 import org.springframework.test.annotation.DirtiesContext;
-import pashazz.widgetmanager.entity.query.WidgetUpdateRequest;
+import org.springframework.test.context.ActiveProfiles;
+import pashazz.widgetmanager.WidgetmanagerApplication;
+import pashazz.widgetmanager.entity.interfaces.Widget;
 import pashazz.widgetmanager.exception.WidgetCreationException;
 import pashazz.widgetmanager.exception.WidgetNotFoundException;
+import pashazz.widgetmanager.repository.WidgetRepository;
+import pashazz.widgetmanager.rest.request.WidgetUpdateRequest;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.List;
 import java.util.Random;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -18,13 +24,15 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static pashazz.widgetmanager.utils.TestUtils.createStaticCreationQuery;
 
-@SpringBootTest
+@SpringBootTest(classes = WidgetmanagerApplication.class)
+@ComponentScan
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
 @Slf4j
-class InMemoryWidgetRepositoryTest {
+@ActiveProfiles("db") // or "memory"
+public class InMemoryWidgetRepositoryTest {
 
   @Autowired
-  private InMemoryWidgetRepository repo;
+  private WidgetRepository<Long> repo;
 
 
   @Test
@@ -40,7 +48,9 @@ class InMemoryWidgetRepositoryTest {
     //endregion
 
     //region assert
-    assertThat(allWidgets).containsExactly(widget2, widget3, widget1);
+    assertThat(allWidgets)
+      .usingRecursiveFieldByFieldElementComparator()
+      .containsExactly(widget2, widget3, widget1);
     //endregion
 
     //region change the zOrder of widget 2 from -5 to 25
@@ -54,9 +64,11 @@ class InMemoryWidgetRepositoryTest {
     assertThat(newWidget2.getZ()).isEqualTo(25);
     assertThat(newWidget2.getLastUpdatedAt()).isAfter(widget2.getLastUpdatedAt());
 
-    var newAllWidgets =  repo.listWidgets();
+    List<Widget<Long>> newAllWidgets = repo.listWidgets();
 
-    assertThat(newAllWidgets).containsExactly(widget3, newWidget2, widget1);
+    assertThat(newAllWidgets)
+      .usingRecursiveFieldByFieldElementComparator()
+      .containsExactly(widget3, newWidget2, widget1);
     //endregion
   }
 
@@ -92,22 +104,22 @@ class InMemoryWidgetRepositoryTest {
 
     var widgets = new ArrayList<>(repo.listWidgets());
     for (int i = 0; i < 5; ++i) {
-      assertEquals(i+1, widgets.get(i).getZ());
+      assertEquals(i + 1, widgets.get(i).getZ());
     }
   }
 
   @Test
   public void shouldReturnCorrectOrderInPagesIfPaginationIsUsed() {
-    final int ELEM_SIZE=9000;
+    final int ELEM_SIZE = 9000;
     Random random = new Random();
 
     int min = Integer.MAX_VALUE;
     for (int i = 0; i < ELEM_SIZE; ++i) {
-      Integer zOrder = random.nextInt(ELEM_SIZE*2);
+      Integer zOrder = random.nextInt(ELEM_SIZE * 2);
       min = Math.min(min, zOrder);
       repo.createWidget(createStaticCreationQuery(zOrder));
     }
-    for (int i  = 0; i < 10; ++i) {
+    for (int i = 0; i < 10; ++i) {
 
       var page = repo.listWidgets(i, ELEM_SIZE / 10);
       var sorted = new ArrayList<>(page);
@@ -115,13 +127,14 @@ class InMemoryWidgetRepositoryTest {
       log.info("page: {}", page);
       log.info("sorted: {}", sorted);
       assertThat(page).containsExactlyElementsOf(sorted);
-      
+
       assertThat(sorted.get(0).getZ()).isGreaterThanOrEqualTo(min);
       min = sorted.get(sorted.size() - 1).getZ();
     }
 
 
   }
+
   @Test
   void shouldDeleteItemsCorrectly() {
     // region init
@@ -134,13 +147,17 @@ class InMemoryWidgetRepositoryTest {
     var allWidgets = repo.listWidgets();
     //endregion
 
-    assertThat(allWidgets).contains(widget1, widget2, widget3);
+    assertThat(allWidgets)
+      .usingRecursiveFieldByFieldElementComparator()
+      .containsExactly(widget2, widget3, widget1);
 
     //region execute
     repo.deleteWidget(widget3.getId());
     //endregion
     var widgets = repo.listWidgets();
-    assertThat(widgets).containsExactly(widget2, widget1);
+    assertThat(widgets)
+      .usingRecursiveFieldByFieldElementComparator()
+      .containsExactly(widget2, widget1);
 
     assertThrows(WidgetNotFoundException.class, () -> repo.getWidget(widget3.getId()));
   }
@@ -151,12 +168,12 @@ class InMemoryWidgetRepositoryTest {
     assertThrows(WidgetCreationException.class, () -> repo.createWidget(WidgetUpdateRequest.builder().build()));
 
     assertThrows(WidgetCreationException.class, () -> repo.createWidget(WidgetUpdateRequest.builder()
-        .x(10)
-        .build()));
+      .x(10)
+      .build()));
     assertThrows(WidgetCreationException.class, () -> repo.createWidget(WidgetUpdateRequest.builder()
-        .x(10)
-        .y(-13)
-        .build()));
+      .x(10)
+      .y(-13)
+      .build()));
 
   }
 
@@ -166,8 +183,6 @@ class InMemoryWidgetRepositoryTest {
   }
 
   //endregion
-
-
 
 
 }

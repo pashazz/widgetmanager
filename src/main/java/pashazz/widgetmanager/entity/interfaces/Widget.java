@@ -1,9 +1,10 @@
-package pashazz.widgetmanager.entity;
+package pashazz.widgetmanager.entity.interfaces;
 
 import java.time.LocalDateTime;
 
-public interface Widget<T> extends ZOrderable {
-  T getId();
+
+public interface Widget<ID> extends ZOrderable {
+  ID getId();
 
   int getX();
 

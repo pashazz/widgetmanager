@@ -1,12 +1,9 @@
-package pashazz.widgetmanager.repository.memory;
+package pashazz.widgetmanager.repository;
 
 import org.jetbrains.annotations.NotNull;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
 import pashazz.widgetmanager.aspect.annotation.Measure;
-import pashazz.widgetmanager.entity.Widget;
-import pashazz.widgetmanager.entity.query.WidgetUpdateRequest;
-import pashazz.widgetmanager.repository.WidgetRepository;
+import pashazz.widgetmanager.entity.interfaces.Widget;
+import pashazz.widgetmanager.rest.request.WidgetUpdateRequest;
 
 import java.util.List;
 import java.util.concurrent.locks.ReadWriteLock;
@@ -23,58 +20,57 @@ import java.util.function.Supplier;
  * 4. the getWidget operation is being locked by our ReadLock because we do not want access to our Map during writing
  * 5. We can't use ConcurrentHashMap +  no read lock  on getWidget because there are internal transitions when 2 widgets have the same zOrder in our
  * HashMap, which breaks the invariant of zOrder being unique. We need the whole update operation to be atomic
- *
- * This decorator depends on implementation intricacies of InMemoryWidgetRepository and has been done so that we'd split locking/unlocking capabilities for
- * better testing
- *
+ * <p>
+ * <p>
+ * The assumption on database is that we always get a consistent listWidgets list (isolation level read-committed) and therefore it won't need a lock.
+ * <p>
+ * TODO Locks for every operation could be turned on and off via config
  */
-@Service
-public class  ConcurrentInMemoryWidgetRepository implements WidgetRepository<Long> {
+public class ConcurrentWidgetRepository<T> implements WidgetRepository<T> {
 
-
-  private final InMemoryWidgetRepository repo;
+  private final WidgetRepository<T> repo;
 
   private final ReadWriteLock lock;
 
-  public ConcurrentInMemoryWidgetRepository(@Autowired @NotNull InMemoryWidgetRepository repo) {
+  public ConcurrentWidgetRepository(WidgetRepository<T> repo) {
     this.repo = repo;
     this.lock = new ReentrantReadWriteLock();
   }
 
   @Override
-  public @NotNull Widget<Long> createWidget(@NotNull WidgetUpdateRequest query) {
-    return writeSafely(() -> repo.createWidget(query));
+  public @NotNull Widget<T> createWidget(@NotNull WidgetUpdateRequest request) {
+    return writeSafely(() -> repo.createWidget(request));
   }
 
   @Override
-  public @NotNull Widget<Long> updateWidget(Long id, @NotNull WidgetUpdateRequest query) {
-    return writeSafely(() -> repo.updateWidget(id, query));
+  public @NotNull Widget<T> updateWidget(@NotNull T id, @NotNull WidgetUpdateRequest request) {
+    return writeSafely(() -> repo.updateWidget(id, request));
   }
 
   @Override
-  public @NotNull Widget<Long> getWidget(@NotNull Long id) {
+  public @NotNull Widget<T> getWidget(@NotNull T id) {
     return readSafely(() -> repo.getWidget(id));
   }
 
   @Override
-  public @NotNull List<Widget<Long>> listWidgets() {
+  public @NotNull List<Widget<T>> listWidgets() {
     return repo.listWidgets();
   }
 
   @Override
-  public @NotNull List<Widget<Long>> listWidgets(int page, int pageSize) {
+  public @NotNull List<Widget<T>> listWidgets(int page, int pageSize) {
     return repo.listWidgets(page, pageSize);
   }
 
   @Override
-  public void deleteWidget(@NotNull Long id) {
+  public void deleteWidget(@NotNull T id) {
     writeSafely(() -> {
       repo.deleteWidget(id);
       return null;
     });
   }
 
-   @Measure
+  @Measure
   private void acquireReadLock() {
     lock.readLock().lock();
   }
@@ -88,6 +84,7 @@ public class  ConcurrentInMemoryWidgetRepository implements WidgetRepository<Lon
   private void releaseReadLock() {
     lock.readLock().unlock();
   }
+
   @Measure
   private void releaseWriteLock() {
     lock.writeLock().unlock();

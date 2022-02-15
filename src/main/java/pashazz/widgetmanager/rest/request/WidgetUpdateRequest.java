@@ -1,4 +1,4 @@
-package pashazz.widgetmanager.entity.query;
+package pashazz.widgetmanager.rest.request;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;

@@ -5,8 +5,11 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.annotation.DirtiesContext;
-import pashazz.widgetmanager.entity.Widget;
-import pashazz.widgetmanager.entity.query.WidgetUpdateRequest;
+import org.springframework.test.context.ActiveProfiles;
+import pashazz.widgetmanager.WidgetmanagerApplication;
+import pashazz.widgetmanager.entity.interfaces.Widget;
+import pashazz.widgetmanager.repository.WidgetRepository;
+import pashazz.widgetmanager.rest.request.WidgetUpdateRequest;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentSkipListSet;
@@ -18,13 +21,14 @@ import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-@SpringBootTest
+@SpringBootTest(classes = WidgetmanagerApplication.class)
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
+@ActiveProfiles("db")
 @Slf4j
 public class InMemoryWidgetRepositoryMultithreadedTest {
 
   @Autowired
-  private ConcurrentInMemoryWidgetRepository repo;
+  private WidgetRepository<Long> repo;
 
   private static WidgetUpdateRequest createCreationQuery() {
     return WidgetUpdateRequest.builder()
@@ -46,10 +50,10 @@ public class InMemoryWidgetRepositoryMultithreadedTest {
     final WidgetUpdateRequest query = createCreationQuery();
     final CountDownLatch doneCreating = createNSameWidgetsConcurrently(CREATOR_THREADS, query, start);
     //endregion
-    final CountDownLatch doneChanging = new CountDownLatch(2*CREATOR_THREADS);
+    final CountDownLatch doneChanging = new CountDownLatch(2 * CREATOR_THREADS);
+
+
     //region  2. Make 1st part of changes concurrently. Add +10 to their x, y, +20 to width and height
-
-
     var updateQuery = WidgetUpdateRequest
       .builder()
       .x(query.getX() + 10)
@@ -60,15 +64,14 @@ public class InMemoryWidgetRepositoryMultithreadedTest {
 
     List<Long> ids = new ArrayList<>();
 
-
     CountDownLatch startEditing = new CountDownLatch(1);
     new Thread(() -> {
       try {
         doneCreating.await();
-        ids.addAll(    repo.listWidgets()
-        .stream()
-        .map(Widget::getId)
-        .collect(Collectors.toList()));
+        ids.addAll(repo.listWidgets()
+          .stream()
+          .map(Widget::getId)
+          .collect(Collectors.toList()));
 
         startEditing.countDown();
       } catch (InterruptedException e) {
@@ -171,7 +174,7 @@ public class InMemoryWidgetRepositoryMultithreadedTest {
 
   @Test
   public void editAndDeleteWidgetsConcurrently() throws InterruptedException {
-    final int N  = 500;
+    final int N = 500;
     //region 1.create N widgets
     CountDownLatch start = new CountDownLatch(1);
     var creationFinished = createNSameWidgetsConcurrently(N, createCreationQuery(), start);
@@ -231,7 +234,7 @@ public class InMemoryWidgetRepositoryMultithreadedTest {
 
 
     //3. assertions
-    List<Long> idsAfterDeletion   = repo.listWidgets()
+    List<Long> idsAfterDeletion = repo.listWidgets()
       .stream()
       .map(Widget::getId)
       .collect(Collectors.toUnmodifiableList());
@@ -241,7 +244,6 @@ public class InMemoryWidgetRepositoryMultithreadedTest {
     assertThat(idsAfterDeletion).containsAnyElementsOf(ids);
 
   }
-
 
 
   private CountDownLatch createNSameWidgetsConcurrently(int N, WidgetUpdateRequest query, CountDownLatch start) {

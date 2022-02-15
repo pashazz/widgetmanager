@@ -1,7 +1,7 @@
 package pashazz.widgetmanager.rest.entity;
 
 import lombok.Data;
-import pashazz.widgetmanager.entity.Widget;
+import pashazz.widgetmanager.entity.interfaces.Widget;
 
 import java.time.LocalDateTime;
 

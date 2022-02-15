@@ -2,10 +2,10 @@ package pashazz.widgetmanager.rest;
 
 import org.jetbrains.annotations.NotNull;
 import org.springframework.web.bind.annotation.*;
-import pashazz.widgetmanager.entity.Widget;
-import pashazz.widgetmanager.entity.query.WidgetUpdateRequest;
-import pashazz.widgetmanager.repository.memory.ConcurrentInMemoryWidgetRepository;
+import pashazz.widgetmanager.entity.interfaces.Widget;
+import pashazz.widgetmanager.repository.WidgetRepository;
 import pashazz.widgetmanager.rest.request.PaginationRequest;
+import pashazz.widgetmanager.rest.request.WidgetUpdateRequest;
 
 import java.util.List;
 import java.util.Optional;
@@ -14,9 +14,9 @@ import java.util.Optional;
 public class RestApiController {
   private static final int DEFAULT_PAGE_SIZE = 50;
 
-  private final ConcurrentInMemoryWidgetRepository repo;
+  private final WidgetRepository<Long> repo;
 
-  public RestApiController(@NotNull ConcurrentInMemoryWidgetRepository repo) {
+  public RestApiController(@NotNull WidgetRepository<Long> repo) {
     this.repo = repo;
   }
 
@@ -33,7 +33,7 @@ public class RestApiController {
   }
 
   @GetMapping("/widgets/{id}")
-  Widget<Long> one (@PathVariable Long id) {
+  Widget<Long> one(@PathVariable Long id) {
     return repo.getWidget(id);
   }
 
@@ -43,7 +43,9 @@ public class RestApiController {
   }
 
   @PutMapping("/widgets/{id}")
-  Widget<Long> updateWidget(@RequestBody WidgetUpdateRequest request, @PathVariable Long id) {return repo.updateWidget(id, request);}
+  Widget<Long> updateWidget(@RequestBody WidgetUpdateRequest request, @PathVariable Long id) {
+    return repo.updateWidget(id, request);
+  }
 
   @DeleteMapping("/widgets/{id}")
   void delete(@PathVariable Long id) {

@@ -6,6 +6,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.boot.web.server.LocalServerPort;
+import org.springframework.test.context.ActiveProfiles;
+import pashazz.widgetmanager.WidgetmanagerApplication;
 import pashazz.widgetmanager.rest.entity.TestWidget;
 import pashazz.widgetmanager.utils.TestUtils;
 
@@ -17,20 +19,22 @@ import java.util.Map;
 import static java.lang.String.format;
 import static org.assertj.core.api.Assertions.assertThat;
 
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
+  classes = WidgetmanagerApplication.class)
+@ActiveProfiles("db")
 @Slf4j
 public class RestApiTest {
 
 
-	@LocalServerPort
-	private int port;
+  @LocalServerPort
+  private int port;
 
-	@Autowired
-	private TestRestTemplate restTemplate;
+  @Autowired
+  private TestRestTemplate restTemplate;
 
   @Test
   void shouldAddWidgetAndListItThenRemoveAndReturnEmptyList() {
-    TestWidget widget1  = restTemplate.postForObject(getUrl("/widgets"), TestUtils.createStaticCreationQuery(1),  TestWidget.class);
+    TestWidget widget1 = restTemplate.postForObject(getUrl("/widgets"), TestUtils.createStaticCreationQuery(1), TestWidget.class);
 
     // 1. assert that widget in the list
     List<HashMap<String, Object>> allWidgets = restTemplate.getForObject("/widgets/all", List.class);

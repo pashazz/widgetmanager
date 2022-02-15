@@ -2,6 +2,7 @@ package pashazz.widgetmanager.repository.memory;
 
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.annotation.DirtiesContext;
@@ -14,6 +15,7 @@ import pashazz.widgetmanager.rest.request.WidgetUpdateRequest;
 import java.util.*;
 import java.util.concurrent.ConcurrentSkipListSet;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import static java.lang.String.format;
@@ -41,6 +43,7 @@ public class InMemoryWidgetRepositoryMultithreadedTest {
   }
 
   @Test
+  @Timeout(value = 50, unit = TimeUnit.SECONDS)
   void shouldConcurrentlyChangeBy2GroupsOfThreads() throws InterruptedException {
     final int CREATOR_THREADS = 500;
 
@@ -135,6 +138,7 @@ public class InMemoryWidgetRepositoryMultithreadedTest {
   }
 
   @Test
+  @Timeout(value = 50, unit = TimeUnit.SECONDS)
   void shouldConcurrentlyDeleteAndListUsingManyThreads() throws InterruptedException {
     var N = 100;
     CountDownLatch start = new CountDownLatch(1);
@@ -173,6 +177,7 @@ public class InMemoryWidgetRepositoryMultithreadedTest {
   }
 
   @Test
+  @Timeout(value = 50, unit = TimeUnit.SECONDS)
   public void editAndDeleteWidgetsConcurrently() throws InterruptedException {
     final int N = 500;
     //region 1.create N widgets

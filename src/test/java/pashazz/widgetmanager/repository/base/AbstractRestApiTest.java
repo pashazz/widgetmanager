@@ -1,4 +1,4 @@
-package pashazz.widgetmanager.rest;
+package pashazz.widgetmanager.repository.base;
 
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Test;
@@ -6,7 +6,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.boot.web.server.LocalServerPort;
-import org.springframework.test.context.ActiveProfiles;
 import pashazz.widgetmanager.WidgetmanagerApplication;
 import pashazz.widgetmanager.rest.entity.TestWidget;
 import pashazz.widgetmanager.utils.TestUtils;
@@ -21,10 +20,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
   classes = WidgetmanagerApplication.class)
-@ActiveProfiles("db")
 @Slf4j
-public class RestApiTest {
-
+public abstract class AbstractRestApiTest {
 
   @LocalServerPort
   private int port;

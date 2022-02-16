@@ -9,7 +9,6 @@ import pashazz.widgetmanager.entity.db.JpaWidgetImpl;
 import java.util.List;
 import java.util.Optional;
 
-@org.springframework.stereotype.Repository
 public interface JpaWidgetRepository extends Repository<JpaWidgetImpl, Long> {
 
 

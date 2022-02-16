@@ -1,4 +1,4 @@
-package pashazz.widgetmanager.faсtory.interfaces;
+package pashazz.widgetmanager.factory.interfaces;
 
 import org.jetbrains.annotations.NotNull;
 import pashazz.widgetmanager.entity.interfaces.Widget;

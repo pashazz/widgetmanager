@@ -13,10 +13,10 @@ import pashazz.widgetmanager.entity.memory.InMemoryLongWidgetBuilder;
 import pashazz.widgetmanager.entity.validator.CreationRequestValidator;
 import pashazz.widgetmanager.entity.validator.RequestValidator;
 import pashazz.widgetmanager.entity.validator.UpdateRequestValidator;
-import pashazz.widgetmanager.faсtory.StandardWidgetFactory;
+import pashazz.widgetmanager.factory.StandardWidgetFactory;
 import pashazz.widgetmanager.generator.CounterSupplier;
-import pashazz.widgetmanager.repository.ConcurrentWidgetRepository;
 import pashazz.widgetmanager.repository.WidgetRepository;
+import pashazz.widgetmanager.repository.concurrent.ConcurrentWidgetRepository;
 import pashazz.widgetmanager.repository.memory.InMemoryWidgetRepository;
 
 import java.util.function.Supplier;

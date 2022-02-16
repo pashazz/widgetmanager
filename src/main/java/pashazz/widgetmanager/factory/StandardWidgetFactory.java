@@ -1,11 +1,11 @@
-package pashazz.widgetmanager.faсtory;
+package pashazz.widgetmanager.factory;
 
 import lombok.extern.slf4j.Slf4j;
 import org.jetbrains.annotations.NotNull;
 import pashazz.widgetmanager.entity.interfaces.Widget;
 import pashazz.widgetmanager.entity.interfaces.WidgetBuilder;
 import pashazz.widgetmanager.entity.validator.RequestValidator;
-import pashazz.widgetmanager.faсtory.interfaces.WidgetFactory;
+import pashazz.widgetmanager.factory.interfaces.WidgetFactory;
 import pashazz.widgetmanager.rest.request.WidgetUpdateRequest;
 
 import java.time.LocalDateTime;

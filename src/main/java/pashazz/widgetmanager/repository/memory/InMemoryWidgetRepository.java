@@ -2,11 +2,10 @@ package pashazz.widgetmanager.repository.memory;
 
 import lombok.extern.slf4j.Slf4j;
 import org.jetbrains.annotations.NotNull;
-import pashazz.widgetmanager.aspect.annotation.Measure;
 import pashazz.widgetmanager.entity.interfaces.Widget;
 import pashazz.widgetmanager.exception.WidgetNotFoundException;
 import pashazz.widgetmanager.exception.WidgetPageException;
-import pashazz.widgetmanager.faсtory.interfaces.WidgetFactory;
+import pashazz.widgetmanager.factory.interfaces.WidgetFactory;
 import pashazz.widgetmanager.repository.WidgetRepository;
 import pashazz.widgetmanager.rest.request.WidgetUpdateRequest;
 
@@ -52,7 +51,6 @@ public class InMemoryWidgetRepository implements WidgetRepository<Long> {
 
 
   @Override
-  @Measure
   @NotNull
   public Widget<Long> createWidget(@NotNull WidgetUpdateRequest request) {
     var widget = widgetFactory.createNewWidget(request, getDefaultZ());
@@ -64,7 +62,6 @@ public class InMemoryWidgetRepository implements WidgetRepository<Long> {
 
 
   @Override
-  @Measure
   @NotNull
   public Widget<Long> updateWidget(Long id, @NotNull WidgetUpdateRequest request) {
     Widget<Long> oldWidget = widgetsById.get(id);
@@ -153,7 +150,6 @@ public class InMemoryWidgetRepository implements WidgetRepository<Long> {
   }
 
   @Override
-  @Measure
   public void deleteWidget(@NotNull Long id) {
     var widget = widgetsById.remove(id);
     if (widget == null) {

@@ -6,7 +6,7 @@ import org.springframework.data.domain.Pageable;
 import pashazz.widgetmanager.entity.db.JpaWidgetImpl;
 import pashazz.widgetmanager.entity.interfaces.Widget;
 import pashazz.widgetmanager.exception.WidgetNotFoundException;
-import pashazz.widgetmanager.faсtory.interfaces.WidgetFactory;
+import pashazz.widgetmanager.factory.interfaces.WidgetFactory;
 import pashazz.widgetmanager.repository.WidgetRepository;
 import pashazz.widgetmanager.repository.db.jpa.JpaWidgetRepository;
 import pashazz.widgetmanager.rest.request.WidgetUpdateRequest;
@@ -33,17 +33,12 @@ public class DbWidgetRepository implements WidgetRepository<Long> {
     this.em = em;
   }
 
-
   @Override
   @Transactional
   public @NotNull Widget<Long> createWidget(@NotNull WidgetUpdateRequest request) {
     var widget = widgetFactory.createNewWidget(request, getDefaultZ());
     shiftZ(widget.getZ());
     return repo.save(widget);
-  }
-
-  private int getDefaultZ() {
-    return Optional.ofNullable(repo.getTopZ()).orElse(0) + 1;
   }
 
   @Override
@@ -60,6 +55,36 @@ public class DbWidgetRepository implements WidgetRepository<Long> {
 
     return repo.save(newWidget);
   }
+
+  @Override
+  @Transactional
+  public @NotNull Widget<Long> getWidget(@NotNull Long id) {
+    return _getWidget(id);
+  }
+
+  @Override
+  @Transactional
+  public @NotNull List<Widget<Long>> listWidgets() {
+    return Collections.unmodifiableList(repo.findAllOrderByZAsc());
+  }
+
+
+  @Override
+  @Transactional
+  public @NotNull List<Widget<Long>> listWidgets(int page, int pageSize) {
+    return Collections.unmodifiableList(repo.findAllOrderByZAsc(Pageable.ofSize(pageSize).withPage(page)).toList());
+  }
+
+  @Override
+  @Transactional
+  public void deleteWidget(@NotNull Long id) {
+    try {
+      repo.deleteById(id);
+    } catch (Exception e) {
+      log.debug("Unable to delete widget by id {}: {}", id, e.getMessage());
+    }
+  }
+
 
   /**
    * Will shift current widget to the next zOrder until there is a gap or end of the list
@@ -98,32 +123,7 @@ public class DbWidgetRepository implements WidgetRepository<Long> {
     return repo.findById(id).orElseThrow(() -> new WidgetNotFoundException(id.toString()));
   }
 
-  @Override
-  @Transactional
-  public @NotNull Widget<Long> getWidget(@NotNull Long id) {
-    return _getWidget(id);
-  }
-
-  @Override
-  @Transactional
-  public @NotNull List<Widget<Long>> listWidgets() {
-    return Collections.unmodifiableList(repo.findAllOrderByZAsc());
-  }
-
-
-  @Override
-  @Transactional
-  public @NotNull List<Widget<Long>> listWidgets(int page, int pageSize) {
-    return Collections.unmodifiableList(repo.findAllOrderByZAsc(Pageable.ofSize(pageSize).withPage(page)).toList());
-  }
-
-  @Override
-  @Transactional
-  public void deleteWidget(@NotNull Long id) {
-    try {
-      repo.deleteById(id);
-    } catch (Exception e) {
-      log.debug("Unable to delete widget by id {}: {}", id, e.getMessage());
-    }
+  private int getDefaultZ() {
+    return Optional.ofNullable(repo.getTopZ()).orElse(0) + 1;
   }
 }

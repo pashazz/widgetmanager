@@ -1,8 +1,9 @@
-package pashazz.widgetmanager.repository;
+package pashazz.widgetmanager.repository.concurrent;
 
 import org.jetbrains.annotations.NotNull;
 import pashazz.widgetmanager.aspect.annotation.Measure;
 import pashazz.widgetmanager.entity.interfaces.Widget;
+import pashazz.widgetmanager.repository.WidgetRepository;
 import pashazz.widgetmanager.rest.request.WidgetUpdateRequest;
 
 import java.util.List;
@@ -24,7 +25,6 @@ import java.util.function.Supplier;
  * <p>
  * The assumption on database is that we always get a consistent listWidgets list (isolation level read-committed) and therefore it won't need a lock.
  * <p>
- * TODO Locks for every operation could be turned on and off via config
  */
 public class ConcurrentWidgetRepository<T> implements WidgetRepository<T> {
 
@@ -37,31 +37,37 @@ public class ConcurrentWidgetRepository<T> implements WidgetRepository<T> {
     this.lock = new ReentrantReadWriteLock();
   }
 
+  @Measure
   @Override
   public @NotNull Widget<T> createWidget(@NotNull WidgetUpdateRequest request) {
     return writeSafely(() -> repo.createWidget(request));
   }
 
+  @Measure
   @Override
   public @NotNull Widget<T> updateWidget(@NotNull T id, @NotNull WidgetUpdateRequest request) {
     return writeSafely(() -> repo.updateWidget(id, request));
   }
 
+  @Measure
   @Override
   public @NotNull Widget<T> getWidget(@NotNull T id) {
     return readSafely(() -> repo.getWidget(id));
   }
 
+  @Measure
   @Override
   public @NotNull List<Widget<T>> listWidgets() {
     return repo.listWidgets();
   }
 
+  @Measure
   @Override
   public @NotNull List<Widget<T>> listWidgets(int page, int pageSize) {
     return repo.listWidgets(page, pageSize);
   }
 
+  @Measure
   @Override
   public void deleteWidget(@NotNull T id) {
     writeSafely(() -> {
@@ -70,22 +76,18 @@ public class ConcurrentWidgetRepository<T> implements WidgetRepository<T> {
     });
   }
 
-  @Measure
   private void acquireReadLock() {
     lock.readLock().lock();
   }
 
-  @Measure
   private void acquireWriteLock() {
     lock.writeLock().lock();
   }
 
-  @Measure
   private void releaseReadLock() {
     lock.readLock().unlock();
   }
 
-  @Measure
   private void releaseWriteLock() {
     lock.writeLock().unlock();
   }

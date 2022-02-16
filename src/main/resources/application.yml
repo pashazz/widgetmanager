@@ -6,9 +6,9 @@ spring:
     username: sa
     password: password
     driverClassName: org.h2.Driver
-  jpa:
-    spring.jpa.database-platform: org.hibernate.dialect.H2Dialect
-
+    hikari:
+      transaction-isolation: "read-committed" # this is necessary so that we won't get uncommitted data on listWidgets and getWidget
+  
 logging:
   level:
     pashazz.widgetmanager: DEBUG

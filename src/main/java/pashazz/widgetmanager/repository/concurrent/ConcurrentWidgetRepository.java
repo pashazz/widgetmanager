@@ -18,10 +18,6 @@ import java.util.function.Supplier;
  * 2. Our WriteLock locks write operations to prevent concurrent access to both the list and the map
  * 3. The listWidgets() operation is thread-safe in InMemoryWidgetRepository due to the underlying variable being volatile
  * and it is only accessed by us through assignment, so no locks
- * 4. the getWidget operation is being locked by our ReadLock because we do not want access to our Map during writing
- * 5. We can't use ConcurrentHashMap +  no read lock  on getWidget because there are internal transitions when 2 widgets have the same zOrder in our
- * HashMap, which breaks the invariant of zOrder being unique. We need the whole update operation to be atomic
- * <p>
  * <p>
  * The assumption on database is that we always get a consistent listWidgets list (isolation level read-committed) and therefore it won't need a lock.
  * <p>
@@ -52,7 +48,7 @@ public class ConcurrentWidgetRepository<T> implements WidgetRepository<T> {
   @Measure
   @Override
   public @NotNull Widget<T> getWidget(@NotNull T id) {
-    return readSafely(() -> repo.getWidget(id));
+    return repo.getWidget(id);
   }
 
   @Measure
@@ -76,6 +72,25 @@ public class ConcurrentWidgetRepository<T> implements WidgetRepository<T> {
     });
   }
 
+  protected <O> O readSafely(@NotNull Supplier<O> execute) {
+    acquireReadLock();
+    try {
+      return execute.get();
+    } finally {
+      releaseReadLock();
+    }
+  }
+
+  protected <O> O writeSafely(@NotNull Supplier<O> execute) {
+    acquireWriteLock();
+    try {
+      return execute.get();
+    } finally {
+      releaseWriteLock();
+    }
+  }
+
+
   private void acquireReadLock() {
     lock.readLock().lock();
   }
@@ -90,23 +105,5 @@ public class ConcurrentWidgetRepository<T> implements WidgetRepository<T> {
 
   private void releaseWriteLock() {
     lock.writeLock().unlock();
-  }
-
-  private <O> O readSafely(@NotNull Supplier<O> execute) {
-    acquireReadLock();
-    try {
-      return execute.get();
-    } finally {
-      releaseReadLock();
-    }
-  }
-
-  private <O> O writeSafely(@NotNull Supplier<O> execute) {
-    acquireWriteLock();
-    try {
-      return execute.get();
-    } finally {
-      releaseWriteLock();
-    }
   }
 }

@@ -16,7 +16,7 @@ import pashazz.widgetmanager.entity.validator.UpdateRequestValidator;
 import pashazz.widgetmanager.factory.StandardWidgetFactory;
 import pashazz.widgetmanager.generator.CounterSupplier;
 import pashazz.widgetmanager.repository.WidgetRepository;
-import pashazz.widgetmanager.repository.concurrent.ConcurrentWidgetRepository;
+import pashazz.widgetmanager.repository.concurrent.ConcurrentWidgetRepositoryWithGetByIdLock;
 import pashazz.widgetmanager.repository.memory.InMemoryWidgetRepository;
 
 import java.util.function.Supplier;
@@ -32,7 +32,7 @@ public class InMemoryRepositoryConfiguration {
 
   @Bean
   public WidgetRepository<Long> widgetRepository() {
-    return new ConcurrentWidgetRepository(
+    return new ConcurrentWidgetRepositoryWithGetByIdLock<>(
       new InMemoryWidgetRepository(
         new StandardWidgetFactory<Long, Widget<Long>>(idGenerator(),
           creationValidator(),
